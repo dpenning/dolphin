@@ -6,6 +6,7 @@
 #include "Common/CommonPaths.h"
 #include "Common/FileUtil.h"
 #include "Common/MemoryUtil.h"
+#include "Common/gamestate.h"
 #include "Common/Timer.h"
 
 #include "Core/ConfigManager.h"
@@ -14,6 +15,10 @@
 #include "Core/Movie.h"
 #include "Core/HW/EXI_DeviceIPL.h"
 #include "Core/HW/SystemTimers.h"
+
+#include "string.h"
+
+GameState game_state = GameState(2, 4, "/Users/dpenning/Desktop/");
 
 // We should provide an option to choose from the above, or figure out the checksum (the algo in yagcd seems wrong)
 // so that people can change default language.
@@ -278,6 +283,19 @@ void CEXIIPL::TransferByte(u8& _uByte)
 				if ((m_count >= 256) || (_uByte == 0xD))
 				{
 					m_szBuffer[m_count] = 0x00;
+
+					// [PROJECT M] check if we got a 
+					// 'stOperatorRuleMelee::notifyEventDead' event
+					// if we did, pass that on to the game state
+
+					char * check_ptr = strstr(m_szBuffer, "notifyEventDead");
+					if (check_ptr != nullptr) {
+						check_ptr = strstr(m_szBuffer, "[") + 1;
+						int player_index = check_ptr[0]  - '0';
+						game_state.playerDied(player_index);
+						NOTICE_LOG(OSREPORT,"%c",check_ptr[0]);
+					}
+
 					NOTICE_LOG(OSREPORT, "%s", m_szBuffer);
 					memset(m_szBuffer, 0, sizeof(m_szBuffer));
 					m_count = 0;
