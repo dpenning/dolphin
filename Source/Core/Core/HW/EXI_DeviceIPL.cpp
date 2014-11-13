@@ -285,18 +285,37 @@ void CEXIIPL::TransferByte(u8& _uByte)
 					m_szBuffer[m_count] = 0x00;
 
 					// [PROJECT M] check if we got a 
-					// 'stOperatorRuleMelee::notifyEventDead' event
+					// stOperatorRuleMelee::notifyEventDead' event
 					// if we did, pass that on to the game state
-
-					char * check_ptr = strstr(m_szBuffer, "notifyEventDead");
-					if (check_ptr != nullptr) {
-						check_ptr = strstr(m_szBuffer, "[") + 1;
-						int player_index = check_ptr[0]  - '0';
+					char * check_1_ptr = strstr(m_szBuffer, "notifyEventDead");
+					if (check_1_ptr != nullptr) {
+						check_1_ptr = strstr(m_szBuffer, "[") + 1;
+						int player_index = check_1_ptr[0]  - '0';
 						game_state.playerDied(player_index);
-						NOTICE_LOG(OSREPORT,"%c",check_ptr[0]);
+						NOTICE_LOG(OSREPORT,"[PM] %s",
+							game_state.logGameState().c_str());
 					}
 
-					NOTICE_LOG(OSREPORT, "%s", m_szBuffer);
+					// [PROJECT M] check if a character swap was recieved
+					// send this off to the game state
+					char * check_2_ptr = strstr(m_szBuffer, "#ftSlot init");
+					if (check_2_ptr != nullptr) {
+						// look for the index
+						char * player_index_ptr = strstr(m_szBuffer, "[") + 1;
+						int player_index = player_index_ptr[0] - '0';
+						NOTICE_LOG(OSREPORT, "[PM] Player Changing:%d", player_index);
+
+						char * player_kind_start_ptr = strstr(m_szBuffer, "Kind:");
+						char * player_kind_end_ptr = strstr(m_szBuffer, "]");
+						std::string kind_str(
+							player_kind_start_ptr, 
+							5, player_kind_end_ptr - player_kind_start_ptr);
+						game_state.setCharacterByInt(
+							player_index, stoi(kind_str));
+						NOTICE_LOG(OSREPORT, "[PM] %s", game_state.logGameState().c_str());
+					}
+
+					//NOTICE_LOG(OSREPORT, "%s", m_szBuffer);
 					memset(m_szBuffer, 0, sizeof(m_szBuffer));
 					m_count = 0;
 				}

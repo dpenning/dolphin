@@ -6,8 +6,10 @@ public:
 	void setNumberPlayers(int);
 	void setNumberStocks(int);
 	void setCharacter(int, std::string);
+	void setCharacterByInt(int, int);
 	void playerDied(int);
 	void resetGame();
+	std::string logGameState();
 private:
 	int number_players;
 	int * player_stocks;
