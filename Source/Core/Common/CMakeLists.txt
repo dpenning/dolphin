@@ -3,7 +3,7 @@ set(SRCS BreakPoints.cpp
          ColorUtil.cpp
          FileSearch.cpp
          FileUtil.cpp
-	 GameState.cpp
+         GameState.cpp
          Hash.cpp
          IniFile.cpp
          MathUtil.cpp

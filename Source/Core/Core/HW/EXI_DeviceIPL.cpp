@@ -6,7 +6,7 @@
 #include "Common/CommonPaths.h"
 #include "Common/FileUtil.h"
 #include "Common/MemoryUtil.h"
-#include "Common/gamestate.h"
+#include "Common/GameState.h"
 #include "Common/Timer.h"
 
 #include "Core/ConfigManager.h"
