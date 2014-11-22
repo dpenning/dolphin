@@ -33,8 +33,12 @@ enum
 class NetPlaySetupDiag : public wxFrame
 {
 public:
-	NetPlaySetupDiag(wxWindow* const parent, const CGameListCtrl* const game_list);
+	NetPlaySetupDiag(wxWindow* const parent, const CGameListCtrl* const game_list, bool);
 	~NetPlaySetupDiag();
+	void OnStartupHost(unsigned long, std::string, std::string);
+	void OnStartupJoin(unsigned long, std::string, std::string);
+	void MakeStartupNetPlayDiag(int port, const std::string ipAddr, std::string &game, std::string nickname, bool is_hosting);
+
 private:
 	void OnJoin(wxCommandEvent& event);
 	void OnHost(wxCommandEvent& event);

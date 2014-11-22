@@ -28,3 +28,5 @@ CMakeLists.txt.user
 # Ignore the build folder
 build
 build/*
+gui_build/*
+gui_build

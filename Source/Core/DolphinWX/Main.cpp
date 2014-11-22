@@ -150,6 +150,8 @@ bool DolphinApp::OnInit()
 	bool UseLogger = false;
 	bool selectVideoBackend = false;
 	bool selectAudioEmulation = false;
+	hostNetplayGame = false;
+	connectNetplayGame = false;
 
 	wxString videoBackendName;
 	wxString audioEmulationName;
@@ -204,6 +206,21 @@ bool DolphinApp::OnInit()
 			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL
 		},
 		{
+			wxCMD_LINE_SWITCH, "H", "host",
+			"Host connect",
+			wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL
+		},
+		{
+			wxCMD_LINE_OPTION, "C", "connect",
+			"connect to netplay game",
+			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL
+		},
+		{
+			wxCMD_LINE_OPTION, "N", "nick",
+			"user nickname",
+			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL
+		},
+		{
 			wxCMD_LINE_NONE, nullptr, nullptr, nullptr, wxCMD_LINE_VAL_NONE, 0
 		}
 	};
@@ -222,6 +239,9 @@ bool DolphinApp::OnInit()
 	selectVideoBackend = parser.Found("video_backend", &videoBackendName);
 	selectAudioEmulation = parser.Found("audio_emulation", &audioEmulationName);
 	playMovie = parser.Found("movie", &movieFile);
+	hostNetplayGame = parser.Found("host");
+	connectNetplayGame = parser.Found("connect", &connectIPAddress);
+	hasNickName = parser.Found("nickname", &netplayNickName);
 
 	if (parser.Found("user", &userPath))
 	{
@@ -405,6 +425,29 @@ void DolphinApp::AfterInit(wxTimerEvent& WXUNUSED(event))
 			main_frame->BootGame("");
 		}
 	}
+
+	std::string nickname = "not_assigned";
+
+	if (hostNetplayGame) {
+		if (!hasNickName) {
+			nickname = "hosting player";
+		}
+		else {
+			nickname = WxStrToStr(netplayNickName);
+		}
+		main_frame->OnStartupNetPlay((unsigned long)2626, nickname, "127.0.0.1", true);
+	}
+	if (connectNetplayGame) {
+		if (!hasNickName) {
+			nickname = "hosting player";
+		}
+		else {
+			nickname = WxStrToStr(netplayNickName);
+		}
+		std::string ipAddr = WxStrToStr(connectIPAddress);
+		main_frame->OnStartupNetPlay((unsigned long)2626, nickname, ipAddr, false);
+	}
+
 }
 
 void DolphinApp::InitLanguageSupport()

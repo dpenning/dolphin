@@ -1364,7 +1364,32 @@ void CFrame::OnNetPlay(wxCommandEvent& WXUNUSED (event))
 		if (NetPlayDiag::GetInstance() != nullptr)
 			NetPlayDiag::GetInstance()->Raise();
 		else
-			g_NetPlaySetupDiag = new NetPlaySetupDiag(this, m_GameListCtrl);
+			g_NetPlaySetupDiag = new NetPlaySetupDiag(this, m_GameListCtrl, true);
+	}
+	else
+	{
+		g_NetPlaySetupDiag->Raise();
+	}
+}
+
+void CFrame::OnStartupNetPlay(
+	unsigned long port,
+	std::string nickname,
+	std::string ip_address,
+	bool hosting) {
+
+	if (!g_NetPlaySetupDiag)
+	{
+		if (NetPlayDiag::GetInstance() != nullptr)
+			NetPlayDiag::GetInstance()->Raise();
+		else
+			g_NetPlaySetupDiag = new NetPlaySetupDiag(this, m_GameListCtrl, false);
+			if (hosting) {
+				g_NetPlaySetupDiag->OnStartupHost(port, "Super Smash Brothers. Project M", nickname);
+			}
+			else {
+				g_NetPlaySetupDiag->OnStartupJoin(port, ip_address, nickname);
+			}
 	}
 	else
 	{

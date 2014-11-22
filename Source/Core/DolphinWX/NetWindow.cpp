@@ -80,7 +80,7 @@ void FillWithGameNames(wxListBox* game_lbox, const CGameListCtrl& game_list)
 		game_lbox->Append(StrToWxStr(BuildGameName(*game)));
 }
 
-NetPlaySetupDiag::NetPlaySetupDiag(wxWindow* const parent, const CGameListCtrl* const game_list)
+NetPlaySetupDiag::NetPlaySetupDiag(wxWindow* const parent, const CGameListCtrl* const game_list, bool show)
 	: wxFrame(parent, wxID_ANY, NETPLAY_TITLEBAR)
 	, m_game_list(game_list)
 {
@@ -211,7 +211,9 @@ NetPlaySetupDiag::NetPlaySetupDiag(wxWindow* const parent, const CGameListCtrl* 
 	main_szr->SetSizeHints(this);
 
 	Center();
-	Show();
+	if (show) {
+		Show();
+	}
 }
 
 NetPlaySetupDiag::~NetPlaySetupDiag()
@@ -241,6 +243,28 @@ void NetPlaySetupDiag::MakeNetPlayDiag(int port, const std::string &game, bool i
 		ip = WxStrToStr(m_connect_ip_text->GetValue());
 
 	netplay_client = new NetPlayClient(ip, (u16)port, npd, WxStrToStr(m_nickname_text->GetValue()));
+	if (netplay_client->is_connected)
+	{
+		npd->Show();
+		Destroy();
+	}
+	else
+	{
+		npd->Destroy();
+	}
+}
+
+void NetPlaySetupDiag::MakeStartupNetPlayDiag(int port, const std::string ipAddr, std::string &game, std::string nickname, bool is_hosting)
+{
+	NetPlayDiag *&npd = NetPlayDiag::GetInstance();
+	std::string ip;
+	npd = new NetPlayDiag(m_parent, m_game_list, game, is_hosting);
+	if (is_hosting)
+		ip = "127.0.0.1";
+	else
+		ip = ipAddr;
+
+	netplay_client = new NetPlayClient(ip, (u16)port, npd, WxStrToStr(nickname));
 	if (netplay_client->is_connected)
 	{
 		npd->Show();
@@ -288,6 +312,34 @@ void NetPlaySetupDiag::OnHost(wxCommandEvent&)
 	}
 }
 
+
+void NetPlaySetupDiag::OnStartupHost(unsigned long port, std::string game, std::string nickname)
+{
+	NetPlayDiag *&npd = NetPlayDiag::GetInstance();
+	if (npd)
+	{
+		PanicAlertT("A NetPlay window is already open!!");
+		return;
+	}
+
+	netplay_server = new NetPlayServer(u16(port));
+	netplay_server->ChangeGame(game);
+	netplay_server->AdjustPadBufferSize(2);
+	if (netplay_server->is_connected)
+	{
+#ifdef USE_UPNP
+		if (m_upnp_chk->GetValue())
+			netplay_server->TryPortmapping(port);
+#endif
+		MakeStartupNetPlayDiag(port, "", game, nickname, true);
+	}
+	else
+	{
+		PanicAlertT("Failed to listen.  Is another instance of the NetPlay server running?");
+	}
+}
+
+
 void NetPlaySetupDiag::OnJoin(wxCommandEvent&)
 {
 	NetPlayDiag *&npd = NetPlayDiag::GetInstance();
@@ -300,6 +352,20 @@ void NetPlaySetupDiag::OnJoin(wxCommandEvent&)
 	unsigned long port = 0;
 	m_connect_port_text->GetValue().ToULong(&port);
 	MakeNetPlayDiag(port, "", false);
+}
+
+void NetPlaySetupDiag::OnStartupJoin(unsigned long port, std::string ipAddr, std::string nickname)
+{
+	NetPlayDiag *&npd = NetPlayDiag::GetInstance();
+	if (npd)
+	{
+		PanicAlertT("A NetPlay window is already open!!");
+		return;
+	}
+
+	std::string game = "";
+
+	MakeStartupNetPlayDiag(port, ipAddr, game, nickname, false);
 }
 
 void NetPlaySetupDiag::OnQuit(wxCommandEvent&)

@@ -35,9 +35,17 @@ private:
 	bool BatchMode;
 	bool LoadFile;
 	bool playMovie;
+
+	bool hostNetplayGame = false;
+	bool connectNetplayGame = false;
+	bool hasNickName = false;
+
 	wxString FileToLoad;
 	wxString movieFile;
 	wxLocale *m_locale;
+
+	wxString connectIPAddress;
+	wxString netplayNickName;
 
 	void AfterInit(wxTimerEvent& WXUNUSED(event));
 	void OnEndSession(wxCloseEvent& event);

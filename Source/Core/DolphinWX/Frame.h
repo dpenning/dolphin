@@ -161,6 +161,7 @@ public:
 	// Perspectives (Should find a way to make all of this private)
 	void DoAddPage(wxWindow *Win, int i, bool Float);
 	void DoRemovePage(wxWindow *, bool bHide = true);
+	void OnStartupNetPlay(unsigned long, std::string, std::string, bool);
 	struct SPerspectives
 	{
 		std::string Name;
