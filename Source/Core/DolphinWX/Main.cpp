@@ -50,6 +50,10 @@
 
 #include "VideoCommon/VideoBackendBase.h"
 
+#include "Common/GameState.h"
+
+extern GameState* g_game_state;
+
 #if defined HAVE_X11 && HAVE_X11
 #include <X11/Xlib.h>
 #endif
@@ -150,12 +154,14 @@ bool DolphinApp::OnInit()
 	bool UseLogger = false;
 	bool selectVideoBackend = false;
 	bool selectAudioEmulation = false;
+	bool hasGameState = false;
 	hostNetplayGame = false;
 	connectNetplayGame = false;
 
 	wxString videoBackendName;
 	wxString audioEmulationName;
 	wxString userPath;
+	wxString gameStateFilePath;
 
 #if wxUSE_CMDLINE_PARSER // Parse command lines
 	wxCmdLineEntryDesc cmdLineDesc[] =
@@ -221,6 +227,11 @@ bool DolphinApp::OnInit()
 			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL
 		},
 		{
+			wxCMD_LINE_OPTION, "G", "gamestate",
+			"location of the game state",
+			wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL
+		},
+		{
 			wxCMD_LINE_NONE, nullptr, nullptr, nullptr, wxCMD_LINE_VAL_NONE, 0
 		}
 	};
@@ -242,6 +253,15 @@ bool DolphinApp::OnInit()
 	hostNetplayGame = parser.Found("host");
 	connectNetplayGame = parser.Found("connect", &connectIPAddress);
 	hasNickName = parser.Found("nickname", &netplayNickName);
+	hasGameState = parser.Found("gamestate", &gameStateFilePath);
+
+	if (hasGameState) {
+		std::cout << "Found Gamestate parameter" << std::endl;
+		g_game_state->setFilePath(WxStrToStr(gameStateFilePath));
+	}
+	else {
+		std::cout << "Could Not Find Gamestate parameter" << std::endl;
+	}
 
 	if (parser.Found("user", &userPath))
 	{
@@ -436,10 +456,11 @@ void DolphinApp::AfterInit(wxTimerEvent& WXUNUSED(event))
 			nickname = WxStrToStr(netplayNickName);
 		}
 		main_frame->OnStartupNetPlay((unsigned long)2626, nickname, "127.0.0.1", true);
+		g_game_state->reportReadyForHosting();
 	}
 	if (connectNetplayGame) {
 		if (!hasNickName) {
-			nickname = "hosting player";
+			nickname = "connecting player";
 		}
 		else {
 			nickname = WxStrToStr(netplayNickName);

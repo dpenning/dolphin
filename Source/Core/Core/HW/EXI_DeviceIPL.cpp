@@ -18,7 +18,7 @@
 
 #include "string.h"
 
-GameState game_state = GameState(2, 4, "/Users/dpenning/Desktop/");
+extern GameState* g_game_state;
 
 // We should provide an option to choose from the above, or figure out the checksum (the algo in yagcd seems wrong)
 // so that people can change default language.
@@ -260,6 +260,8 @@ void CEXIIPL::TransferByte(u8& _uByte)
 		// Actually read or write a byte
 		switch (CommandRegion())
 		{
+
+		// REAL TIME CLOCK?
 		case REGION_RTC:
 			if (IsWriteCommand())
 				m_RTC[(m_uAddress & 0x03) + m_uRWOffset] = _uByte;
@@ -267,6 +269,7 @@ void CEXIIPL::TransferByte(u8& _uByte)
 				_uByte = m_RTC[(m_uAddress & 0x03) + m_uRWOffset];
 			break;
 
+		// STATIC RANDOM ACCESS MEMORY
 		case REGION_SRAM:
 			if (IsWriteCommand())
 				g_SRAM.p_SRAM[(m_uAddress & 0x3F) + m_uRWOffset] = _uByte;
@@ -274,6 +277,7 @@ void CEXIIPL::TransferByte(u8& _uByte)
 				_uByte = g_SRAM.p_SRAM[(m_uAddress & 0x3F) + m_uRWOffset];
 			break;
 
+		// UNIVERSAL ASYNCHRONOUS RECIEVER/TRANSMITTER
 		case REGION_UART:
 		case REGION_EUART:
 			if (IsWriteCommand())
@@ -291,9 +295,9 @@ void CEXIIPL::TransferByte(u8& _uByte)
 					if (check_1_ptr != nullptr) {
 						check_1_ptr = strstr(m_szBuffer, "[") + 1;
 						int player_index = check_1_ptr[0]  - '0';
-						game_state.playerDied(player_index);
-						NOTICE_LOG(OSREPORT,"[PM] %s",
-							game_state.logGameState().c_str());
+						g_game_state->playerDied(player_index);
+						NOTICE_LOG(OSREPORT, "[PM] %s",
+							g_game_state->logGameState().c_str());
 					}
 
 					// [PROJECT M] check if a character swap was recieved
@@ -310,12 +314,12 @@ void CEXIIPL::TransferByte(u8& _uByte)
 						std::string kind_str(
 							player_kind_start_ptr, 
 							5, player_kind_end_ptr - player_kind_start_ptr);
-						game_state.setCharacterByInt(
+						g_game_state->setCharacterByInt(
 							player_index, stoi(kind_str));
-						NOTICE_LOG(OSREPORT, "[PM] %s", game_state.logGameState().c_str());
+						NOTICE_LOG(OSREPORT, "[PM] %s", g_game_state->logGameState().c_str());
 					}
 
-					//NOTICE_LOG(OSREPORT, "%s", m_szBuffer);
+					NOTICE_LOG(OSREPORT, "%s", m_szBuffer);
 					memset(m_szBuffer, 0, sizeof(m_szBuffer));
 					m_count = 0;
 				}

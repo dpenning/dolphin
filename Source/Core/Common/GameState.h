@@ -9,7 +9,10 @@ public:
 	void setCharacterByInt(int, int);
 	void playerDied(int);
 	void resetGame();
+	void setFilePath(std::string);
+	void reportReadyForHosting();
 	std::string logGameState();
+
 private:
 	int number_players;
 	int * player_stocks;
@@ -21,3 +24,5 @@ private:
 	void gameOver();
 	void saveGame();
 };
+
+GameState* g_game_state = new GameState(2, 4, "");

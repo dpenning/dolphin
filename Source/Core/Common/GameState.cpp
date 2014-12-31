@@ -123,8 +123,7 @@ void GameState::resetGame() {
     tstruct = *localtime(&now);
     strftime(buf, sizeof(buf), "%Y-%m-%d-%X", &tstruct);
 
-	file_location = file_path + "game" + buf + ".txt";
-	std::cout << file_location << std::endl;
+	file_location = file_path + "/game" + buf + ".txt";
 }
 
 void GameState::gameOver() {
@@ -135,13 +134,29 @@ void GameState::gameOver() {
 void GameState::saveGame() {
 	// save at the file location and reset the game
 	std::ofstream save_file;
-	save_file.open(file_location);
+	save_file.open(file_path + file_location);
 
 	//first write player
 	for (int i = 0; i < number_players; i++) {
-		save_file << i << ", " <<
-			player_stocks[i] << ", " <<
+		save_file << i << "," <<
+			player_stocks[i] << "," <<
 			player_character[i] << std::endl;
 	}
+	save_file.close();
+}
+
+void GameState::setFilePath(std::string fp) {
+	std::cout << "New File Path " << fp << std::endl;
+	file_path = fp;
+}
+
+void GameState::reportReadyForHosting() {
+	// save at the file location and reset the game
+	std::ofstream save_file;
+	std::cout << "* Reporting Host Ready to " << file_path + "/ready_for_hosting.txt" << std::endl;
+	save_file.open(file_path + "/ready_for_hosting.txt");
+
+	//first write player
+	save_file << "Ready To Host" << std::endl;
 	save_file.close();
 }
